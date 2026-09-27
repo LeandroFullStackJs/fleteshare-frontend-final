@@ -1,0 +1,99 @@
+import { Form, Formik } from 'formik';
+import { Mail } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { ROUTES } from '@/utils/constants';
+import Input from '@/components/ui/Input';
+import Button from '@/components/ui/Button';
+import { validationSchema } from './schema';
+import { useRecoverPassword } from './useRecoverPassword';
+
+const RecoverPassword = () => {
+  const { recoverSent, initialValues, isLoading, error, handleRecoverPassword } =
+    useRecoverPassword();
+
+  return (
+    <div>
+      {!recoverSent && (
+        <div className="text-center mb-6">
+          <p className="text-gray-600">Ingresá tu correo para recibir instrucciones.</p>
+        </div>
+      )}
+
+      {error && (
+        <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-400 rounded-md">
+          <div className="text-red-700 text-sm font-medium">{error}</div>
+        </div>
+      )}
+
+      {recoverSent ? (
+        <div className="text-center text-green-600 mb-4">
+          Listo! Enviamos un correo electrónico con instrucciones para restablecer tu contraseña.
+        </div>
+      ) : (
+        <Formik
+          initialValues={initialValues}
+          validationSchema={validationSchema}
+          onSubmit={(values, { setSubmitting }) => {
+            handleRecoverPassword(values.username);
+            setSubmitting(false);
+          }}
+        >
+          {formik => (
+            <Form className="space-y-6">
+              <Input
+                required
+                fullWidth
+                label="Correo electrónico"
+                type="email"
+                id="username"
+                name="username"
+                placeholder="tu@email.com"
+                value={formik.values.username}
+                onChange={formik.handleChange}
+                icon={<Mail size={18} />}
+              />
+              <Button
+                type="button"
+                onClick={() => {
+                  formik.handleSubmit();
+                }}
+                variant="primary"
+                fullWidth
+                isLoading={isLoading}
+                disabled={formik.isSubmitting}
+              >
+                Enviar instrucciones
+              </Button>
+            </Form>
+          )}
+        </Formik>
+      )}
+
+      {recoverSent && (
+        <div className="text-center mt-4">
+          <p className="text-sm text-center text-gray-500 mb-4">
+            Si no recibís el correo, revisá tu carpeta de spam.
+          </p>
+          <Link to={ROUTES.LOGIN}>
+            <Button variant="outline" fullWidth>
+              Volver al inicio de sesión
+            </Button>
+          </Link>
+        </div>
+      )}
+
+      {!recoverSent && (
+        <div className="mt-6 text-center">
+          <p className="text-sm text-gray-600">
+            ¿Recordaste tu contraseña?{' '}
+            <Link to={ROUTES.LOGIN} className="text-primary-600 hover:text-primary-500 font-medium">
+              Inicia sesión
+            </Link>
+          </p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default RecoverPassword;
